@@ -1,0 +1,34 @@
+{
+  "name": "airportmapper-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "mocha --require tests/setup.js \"tests/**/*.test.js\"",
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test-with-coverage": "nyc mocha --require tests/setup.js \"tests/**/*.test.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^5.2.0",
+    "mocha": "^11.5.0",
+    "nyc": "^17.1.0",
+    "prettier": "3.5.3",
+    "sinon": "^20.0.0",
+    "supertest": "^7.1.1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.0",
+    "node-cron": "^4.1.0",
+    "pg": "^8.16.0",
+    "winston": "^3.17.0"
+  }
+}
