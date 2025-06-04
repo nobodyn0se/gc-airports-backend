@@ -8,6 +8,10 @@ const logger = require('../middleware/logger');
 const {
   processAirportData,
 } = require('../services/process-airport-data');
+const {
+  readFileData,
+  writeFileData,
+} = require('../util/file-util');
 
 const LOCAL_CSV_PATH = path.join(
   __dirname,
@@ -23,16 +27,7 @@ const fetchFirstThreeRows = async () => {
 
   try {
     if (process.env.NODE_ENV === 'dev') {
-      try {
-        await fs.access(LOCAL_CSV_PATH);
-        logger.info(
-          'Trying to read from existing local CSV file...'
-        );
-
-        csvData = await fs.readFile(LOCAL_CSV_PATH, 'utf8');
-      } catch (readError) {
-        logger.error(readError);
-      }
+      csvData = await readFileData(LOCAL_CSV_PATH, 'CSV');
     }
 
     if (csvData == null) {
@@ -43,22 +38,7 @@ const fetchFirstThreeRows = async () => {
       csvData = response.data;
 
       if (process.env.NODE_ENV === 'dev') {
-        const uploadsDir = path.dirname(LOCAL_CSV_PATH);
-        try {
-          await fs.mkdir(uploadsDir, { recursive: true });
-          logger.info(
-            'Local uploads directory detected. Saving data...'
-          );
-
-          await fs.writeFile(
-            LOCAL_CSV_PATH,
-            csvData,
-            'utf8'
-          );
-          logger.info('CSV data saved to local file');
-        } catch (dirError) {
-          logger.error(dirError);
-        }
+        await writeFileData(LOCAL_CSV_PATH, 'CSV', csvData);
       }
     }
 
