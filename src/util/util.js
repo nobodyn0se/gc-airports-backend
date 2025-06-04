@@ -43,4 +43,16 @@ const publicErrorMessage = (statusCode) => {
   return message;
 };
 
-module.exports = { logLevel, publicErrorMessage };
+const createTestError = (statusCode) => {
+  let error = new Error(
+    `This is a simulated ${statusCode} error`
+  );
+  error.status = parseInt(statusCode);
+  return error;
+};
+
+module.exports = {
+  logLevel,
+  publicErrorMessage,
+  createTestError,
+};
