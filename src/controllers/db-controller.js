@@ -5,22 +5,12 @@ const path = require('path');
 const { Readable } = require('stream');
 
 const logger = require('../middleware/logger');
-const {
-  processAirportData,
-} = require('../services/process-airport-data');
-const {
-  readFileData,
-  writeFileData,
-} = require('../util/file-util');
+const { processAirportData } = require('../services/process-airport-data');
+const { readFileData, writeFileData } = require('../util/file-util');
 
-const LOCAL_CSV_PATH = path.join(
-  __dirname,
-  '..',
-  'uploads',
-  'airports.csv'
-);
+const LOCAL_CSV_PATH = path.join(__dirname, '..', 'uploads', 'airports.csv');
 
-const fetchFirstThreeRows = async () => {
+const fetchAndUpdateAirports = async () => {
   let csvData;
 
   console.log(LOCAL_CSV_PATH);
@@ -31,9 +21,7 @@ const fetchFirstThreeRows = async () => {
     }
 
     if (csvData == null) {
-      logger.info(
-        'Fetching airport data from remote server...'
-      );
+      logger.info('Fetching airport data from remote server...');
       const response = await axios.get(process.env.CSV_URL);
       csvData = response.data;
 
@@ -75,8 +63,8 @@ const fetchFirstThreeRows = async () => {
     );
   } catch (error) {
     logger.error(error);
-    throw error;
+    // throw error;
   }
 };
 
-module.exports = fetchFirstThreeRows;
+module.exports = fetchAndUpdateAirports;
