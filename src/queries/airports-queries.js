@@ -22,6 +22,21 @@ const selectAllAirportsQuery = `
   SELECT * FROM airports;
 `;
 
+const batchUpsertAirportsQuery = (columns, values) => `
+  INSERT INTO airports (${columns})
+  VALUES ${values}
+  ON CONFLICT (id) DO UPDATE SET
+    ident = EXCLUDED.ident,
+    type = EXCLUDED.type,
+    name = EXCLUDED.name,
+    lat = EXCLUDED.lat,
+    long = EXCLUDED.long,
+    elevation = EXCLUDED.elevation,
+    icao = EXCLUDED.icao,
+    iata = EXCLUDED.iata,
+    country = EXCLUDED.country;
+`;
+
 
 const insertAirportQuery = (columns, values) => `
   INSERT INTO airports (${columns})
@@ -45,4 +60,5 @@ module.exports = {
   insertAirportQuery,
   updateAirportQuery,
   batch_InsertAirportsQuery,
+  batchUpsertAirportsQuery
 };
