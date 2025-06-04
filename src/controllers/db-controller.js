@@ -4,14 +4,17 @@ const fs = require('fs').promises;
 const path = require('path');
 const { Readable } = require('stream');
 
+const db = require('../services/db');
 const logger = require('../middleware/logger');
 const { processAirportData } = require('../services/process-airport-data');
+const tx = require('../services/tx');
 const { readFileData, writeFileData } = require('../util/file-util');
 
 const LOCAL_CSV_PATH = path.join(__dirname, '..', 'uploads', 'airports.csv');
 
 const fetchAndUpdateAirports = async () => {
   let csvData;
+  let dbClient;
 
   console.log(LOCAL_CSV_PATH);
 
@@ -61,9 +64,32 @@ const fetchAndUpdateAirports = async () => {
     logger.info(
       `Processed ${processedAirports.length} where IATA, ICAO, lat, long are all present`
     );
+
+    dbClient = tx.startTx();
+
+    if (processedAirports.length > 0) {
+      const BATCH_SIZE = process.env.BATCH_SIZE;
+
+      for (let i = 0; i < processedAirports.length; i += BATCH_SIZE) {
+        const batch = processedAirports.slice(i, i + BATCH_SIZE);
+        await db.batchUpsertAirports(dbClient, batch);
+      }
+      logger.info(
+        `Upserted ${processedAirports.length} valid airports into Postgres DB`
+      );
+    } else {
+      logger.info('No airports to update/insert today');
+    }
+
+    await tx.commitTx(dbClient);
   } catch (error) {
     logger.error(error);
     // throw error;
+    if (dbClient) {
+      await tx.rollbackTx(dbClient);
+    }
+  } finally {
+    await tx.endPool();
   }
 };
 
