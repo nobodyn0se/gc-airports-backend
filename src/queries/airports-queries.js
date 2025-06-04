@@ -34,7 +34,7 @@ const updateAirportQuery = (updateConditions, id) => `
   WHERE id = $${id};
 `;
 
-const insertAirportsBatchQuery = (columns, values) => `
+const batch_InsertAirportsQuery = (columns, values) => `
   INSERT INTO airports (${columns})
   VALUES ${values} ON CONFLICT (id) DO NOTHING;
 `;
@@ -44,5 +44,5 @@ module.exports = {
   selectAllAirportsQuery,
   insertAirportQuery,
   updateAirportQuery,
-  insertAirportsBatchQuery,
+  batch_InsertAirportsQuery,
 };
