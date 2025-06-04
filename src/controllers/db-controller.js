@@ -1,60 +1,101 @@
 const axios = require('axios');
 const csv = require('csv-parser');
+const fs = require('fs').promises;
+const path = require('path');
 const { Readable } = require('stream');
 
 const logger = require('../middleware/logger');
 
-const fetchFirstThreeRows = async () => {
-  try {
-    logger.info('Attempting to fetch CSV data...');
-    const response = await axios.get(process.env.CSV_URL);
+const LOCAL_CSV_PATH = path.join(
+  __dirname,
+  '..',
+  'uploads',
+  'airports.csv'
+);
 
-    // Log the beginning of the response data to confirm it's being received
+const fetchFirstThreeRows = async () => {
+  let csvData;
+
+  console.log(LOCAL_CSV_PATH);
+
+  try {
+    if (process.env.NODE_ENV === 'dev') {
+      try {
+        await fs.access(LOCAL_CSV_PATH);
+        logger.info(
+          'Trying to read from existing local CSV file...'
+        );
+
+        csvData = await fs.readFile(LOCAL_CSV_PATH, 'utf8');
+      } catch (readError) {
+        logger.error(readError);
+      }
+    }
+
+    if (csvData == null) {
+      logger.info(
+        'Fetching airport data from remote server...'
+      );
+      const response = await axios.get(process.env.CSV_URL);
+      csvData = response.data;
+
+      if (process.env.NODE_ENV === 'dev') {
+        const uploadsDir = path.dirname(LOCAL_CSV_PATH);
+        try {
+          await fs.mkdir(uploadsDir, { recursive: true });
+          logger.info(
+            'Local uploads directory detected. Saving data...'
+          );
+
+          await fs.writeFile(
+            LOCAL_CSV_PATH,
+            csvData,
+            'utf8'
+          );
+          logger.info('CSV data saved to local file');
+        } catch (dirError) {
+          logger.error(dirError);
+        }
+      }
+    }
+
     logger.info(
-      `CSV data fetched. First 200 characters: ${response.data.substring(0, 200)}`
+      `CSV data fetched. First 200 characters: ${csvData.substring(0, 200)}`
     );
 
     const results = [];
 
-    const stream = Readable.from(response.data); // Use response.data directly, csv-parser can handle it
+    const stream = Readable.from(csvData);
 
-    // Return a new Promise to handle the asynchronous stream parsing
     return new Promise((resolve, reject) => {
       stream
-        .pipe(csv()) // Pipe the stream to the csv-parser
+        .pipe(csv())
         .on('data', (data) => {
-          // This event fires for each parsed row
           if (results.length < 3) {
             results.push(data);
             logger.info(
               `Row ${results.length} collected: ${JSON.stringify(data)}`
-            ); // Log each row as it's collected
+            );
           }
-          // If we have enough rows, we can optionally destroy the stream to stop processing
+
           if (results.length === 3) {
-            stream.destroy(); // Stop the stream once 3 rows are found
+            stream.destroy();
           }
         })
         .on('end', () => {
-          // This event fires when the entire stream has been processed
           logger.info(
             `CSV parsing complete. First three rows: ${JSON.stringify(results)}`
           );
-          resolve(results); // Resolve the promise with the collected results
+          resolve(results);
         })
         .on('error', (err) => {
-          // This event fires if any error occurs during stream processing
-          logger.error(err.message);
-          reject(err); // Reject the promise if an error occurs
+          logger.error(err);
+          reject(err);
         });
     });
   } catch (error) {
-    // Catch errors from axios.get or initial stream creation
-    console.error(
-      'Error fetching or initializing CSV stream:',
-      error.message
-    );
-    throw error; // Re-throw the error so the caller can handle it
+    logger.error(error);
+    // throw error;
   }
 };
 
