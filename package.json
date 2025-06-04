@@ -5,6 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "test": "mocha --require tests/setup.js \"tests/**/*.test.js\"",
+    "test-watch": "mocha --watch --require tests/setup.js \"tests/**/*.test.js\"",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "test-with-coverage": "nyc mocha --require tests/setup.js \"tests/**/*.test.js\""
