@@ -11,12 +11,17 @@ const pool = new Pool({
 
 // Function to test the connection
 const testConnection = async () => {
+  let client;
+
   try {
-    const client = await pool.connect();
+    client = await pool.connect();
     logger.info('Connected to the Postgres DB successfully!');
-    client.release(); // Release the client back to the pool
   } catch (err) {
     logger.error(`Couldn't connect to DB, ${err}`);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 };
 
@@ -27,6 +32,56 @@ const createAirportsTable = async () => {
   } catch (err) {
     logger.error(`Error creating airports table ${err}`);
     process.exit(1);
+  }
+};
+
+const batchUpsertAirports = async (client, airportsBatch) => {
+  if (airportsBatch.length === 0) {
+    return;
+  }
+
+  const columns = [
+    'id',
+    'ident',
+    'type',
+    'name',
+    'lat',
+    'long',
+    'elevation',
+    'icao',
+    'iata',
+    'country',
+  ];
+
+  const valuePlaceholders = airportsBatch
+    .map((airport, airportIndex) => {
+      return `(${columns.map((col, colIndex) => `$${airportIndex * columns.length + colIndex + 1}`).join(', ')})`;
+    })
+    .join(', ');
+
+  const values = airportsBatch.flatMap((airport) => [
+    airport.id,
+    airport.ident,
+    airport.type,
+    airport.name,
+    airport.lat,
+    airport.long,
+    airport.elevation,
+    airport.icao,
+    airport.iata,
+    airport.country,
+  ]);
+
+  const queryText = queries.batchUpsertAirportsQuery(
+    columns.join(', '),
+    valuePlaceholders
+  );
+
+  try {
+    await client.query(queryText, values);
+    logger.info(`Upserted a batch of ${airportsBatch.length} airports`);
+  } catch (err) {
+    logger.error(`Upsert Error, ${err}`);
   }
 };
 
@@ -77,5 +132,6 @@ module.exports = {
   testConnection,
   createAirportsTable,
   batch_InsertAirports,
+  batchUpsertAirports,
   pool,
 };
