@@ -5,6 +5,9 @@ const path = require('path');
 const { Readable } = require('stream');
 
 const logger = require('../middleware/logger');
+const {
+  processAirportData,
+} = require('../services/process-airport-data');
 
 const LOCAL_CSV_PATH = path.join(
   __dirname,
@@ -67,35 +70,32 @@ const fetchFirstThreeRows = async () => {
 
     const stream = Readable.from(csvData);
 
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       stream
         .pipe(csv())
         .on('data', (data) => {
-          if (results.length < 3) {
-            results.push(data);
-            logger.info(
-              `Row ${results.length} collected: ${JSON.stringify(data)}`
-            );
-          }
-
-          if (results.length === 3) {
-            stream.destroy();
-          }
+          results.push(data);
         })
         .on('end', () => {
           logger.info(
-            `CSV parsing complete. First three rows: ${JSON.stringify(results)}`
+            `Parsed ${results.length} rows from the original dataset`
           );
-          resolve(results);
+
+          resolve();
         })
         .on('error', (err) => {
           logger.error(err);
           reject(err);
         });
     });
+
+    const processedAirports = processAirportData(results);
+    logger.info(
+      `Processed ${processedAirports.length} where IATA, ICAO, lat, long are all present`
+    );
   } catch (error) {
     logger.error(error);
-    // throw error;
+    throw error;
   }
 };
 
