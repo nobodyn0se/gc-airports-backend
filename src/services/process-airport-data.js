@@ -24,7 +24,7 @@ const processAirportData = (csvData) => {
 
     // Select and rename attributes
     const processedRow = {
-      id: row.id,
+      id: parseInt(row.id, 10),
       ident: row.ident,
       type: row.type,
       name: row.name,
