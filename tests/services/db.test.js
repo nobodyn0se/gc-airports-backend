@@ -6,6 +6,7 @@ const {
   testConnection,
   pool,
   batchUpsertAirports,
+  createAirportsTable,
 } = require('../../src/services/db');
 
 describe('DB Service Tests', () => {
@@ -19,6 +20,8 @@ describe('DB Service Tests', () => {
       query: sinon.stub(),
     };
     sinon.stub(pool, 'connect');
+    sinon.stub(pool, 'query');
+
     loggerInfo = sinon.stub(logger, 'info');
     loggerError = sinon.stub(logger, 'error');
   });
@@ -101,6 +104,32 @@ describe('DB Service Tests', () => {
 
       expect(loggerError.calledOnce).to.be.true;
       expect(loggerInfo.notCalled).to.be.true;
+    });
+  });
+
+  describe('DB Create Table', () => {
+    it('should create a DB airports table successfully', async () => {
+      pool.query.resolves();
+
+      await createAirportsTable();
+      expect(loggerInfo.calledOnce).to.be.true;
+      expect(loggerInfo.calledWith('Airports table created/exists in Postgres'))
+        .to.be.true;
+      expect(loggerError.notCalled).to.be.true;
+    });
+
+    it('should log an error while creating airports table', async () => {
+      pool.query.rejects(new Error('Table creation failed'));
+
+      await createAirportsTable();
+
+      expect(loggerInfo.notCalled).to.be.true;
+
+      expect(loggerError.getCall(0).args[0]).to.equal(
+        'Error creating airports table Error: Table creation failed'
+      );
+
+      expect(loggerError.calledOnce).to.be.true;
     });
   });
 });
