@@ -66,7 +66,8 @@ describe('DB Controller Tests', () => {
   });
 
   it('should fetch and process airport data from remote server', async () => {
-    const mockCsvData = 'iata,icao,lat,long\nABC,XYZ,12.34,56.78\n';
+    const mockCsvData =
+      'iata_code,icao_code,latitude_deg,longitude_deg\nABC,XYZ,12.34,56.78\n';
     readFileDataStub.resolves(null);
     axiosGetStub.resolves({ data: mockCsvData });
     writeFileDataStub.resolves();
@@ -81,15 +82,20 @@ describe('DB Controller Tests', () => {
     );
 
     parseCSVStub.resolves([
-      { iata: 'ABC', icao: 'XYZ', lat: 12.34, long: 56.78 },
+      {
+        iata_code: 'ABC',
+        icao_code: 'XYZ',
+        latitude_deg: 12.34,
+        longitude_deg: 56.78,
+      },
     ]);
 
     await fetchAndUpdateAirports(dummyCSVPath);
 
     expect(axiosGetStub.calledOnce).to.be.true;
     expect(writeFileDataStub.calledOnce).to.be.true;
-    expect(startTxStub.calledOnce).to.be.true;
-    expect(commitTxStub.calledOnce).to.be.true;
+    expect(startTxStub.notCalled).to.be.true;
+    expect(commitTxStub.notCalled).to.be.true;
     expect(rollbackTxStub.notCalled).to.be.true;
     expect(logger.info.called).to.be.true;
   });
@@ -106,12 +112,15 @@ describe('DB Controller Tests', () => {
   });
 
   it('should read from local CSV if in dev mode', async () => {
-    const mockCsvData = 'iata,icao,lat,long\nABC,XYZ,12.34,56.78\n';
+    const mockCsvData =
+      'id,iata_code,icao_code,latitude_deg,longitude_deg\n1337,ABC,XYZ,12.34,56.78\n';
     readFileDataStub.resolves(mockCsvData);
 
     const processAirportDataStub = sinon
       .stub()
-      .returns([{ iata: 'ABC', icao: 'XYZ', lat: 12.34, long: 56.78 }]);
+      .returns([
+        { id: 1337, iata: 'ABC', icao: 'XYZ', lat: 12.34, long: 56.78 },
+      ]);
     sinon.replace(
       require('../../src/services/process-airport-data'),
       'processAirportData',
@@ -119,13 +128,20 @@ describe('DB Controller Tests', () => {
     );
 
     parseCSVStub.resolves([
-      { iata: 'ABC', icao: 'XYZ', lat: 12.34, long: 56.78 },
+      {
+        id: 1337,
+        iata_code: 'ABC',
+        icao_code: 'XYZ',
+        latitude_deg: 12.34,
+        longitude_deg: 56.78,
+      },
     ]);
 
     await fetchAndUpdateAirports(dummyCSVPath);
 
     expect(readFileDataStub.calledOnce).to.be.true;
     expect(axiosGetStub.notCalled).to.be.true;
+    expect(startTxStub.calledOnce).to.be.true;
     expect(commitTxStub.calledOnce).to.be.true;
   });
 
@@ -146,7 +162,8 @@ describe('DB Controller Tests', () => {
 
     await fetchAndUpdateAirports(dummyCSVPath);
 
-    expect(commitTxStub.calledOnce).to.be.true;
+    expect(startTxStub.notCalled).to.be.true;
+    expect(commitTxStub.notCalled).to.be.true;
     expect(logger.info.calledWith('No airports to update/insert today')).to.be
       .true;
   });
@@ -162,8 +179,8 @@ describe('DB Controller Tests', () => {
 
     await fetchAndUpdateAirports(dummyCSVPath);
 
+    expect(startTxStub.notCalled).to.be.true;
     expect(commitTxStub.notCalled).to.be.true;
-    expect(rollbackTxStub.notCalled).to.be.true;
     expect(logger.error.calledOnce).to.be.true;
     expect(
       logger.error.calledWithMatch(
@@ -214,6 +231,7 @@ describe('DB Controller Tests', () => {
 
     await fetchAndUpdateAirports(dummyCSVPath);
 
+    expect(startTxStub.calledOnce).to.be.true;
     expect(db.batchUpsertAirports.callCount).to.equal(2); // Should call upsert twice for two airports
     expect(commitTxStub.calledOnce).to.be.true;
   });
@@ -237,7 +255,9 @@ describe('DB Controller Tests', () => {
 
     await fetchAndUpdateAirports(dummyCSVPath);
 
+    expect(startTxStub.notCalled).to.be.true;
     expect(db.batchUpsertAirports.notCalled).to.be.true; // No upsert calls should be made
+    expect(rollbackTxStub.notCalled).to.be.true;
     expect(logger.info.calledWith('No airports to update/insert today')).to.be
       .true;
   });
