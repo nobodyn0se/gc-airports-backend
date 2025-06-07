@@ -31,7 +31,7 @@ const createAirportsTable = async () => {
     logger.info('Airports table created/exists in Postgres');
   } catch (err) {
     logger.error(`Error creating airports table ${err}`);
-    process.exit(1);
+    // process.exit(1);
   }
 };
 
