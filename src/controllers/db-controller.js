@@ -43,10 +43,10 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
       `Processed ${processedAirports.length} where IATA, ICAO, lat, long are all present`
     );
 
-    dbClient = tx.startTx();
-
     if (processedAirports.length > 0) {
       const BATCH_SIZE = process.env.BATCH_SIZE;
+
+      dbClient = tx.startTx();
 
       for (let i = 0; i < processedAirports.length; i += BATCH_SIZE) {
         const batch = processedAirports.slice(i, i + BATCH_SIZE);
