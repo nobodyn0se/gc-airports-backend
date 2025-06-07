@@ -46,20 +46,21 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
     if (processedAirports.length > 0) {
       const BATCH_SIZE = process.env.BATCH_SIZE;
 
-      dbClient = tx.startTx();
+      dbClient = await tx.startTx();
 
       for (let i = 0; i < processedAirports.length; i += BATCH_SIZE) {
         const batch = processedAirports.slice(i, i + BATCH_SIZE);
         await db.batchUpsertAirports(dbClient, batch);
       }
+
+      await tx.commitTx(dbClient);
+
       logger.info(
         `Upserted ${processedAirports.length} valid airports into Postgres DB`
       );
     } else {
       logger.info('No airports to update/insert today');
     }
-
-    await tx.commitTx(dbClient);
   } catch (error) {
     logger.error(error);
     // throw error;
@@ -67,7 +68,9 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
       await tx.rollbackTx(dbClient);
     }
   } finally {
-    await tx.endPool();
+    if (dbClient) {
+      await tx.endPool();
+    }
   }
 };
 
