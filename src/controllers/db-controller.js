@@ -9,14 +9,13 @@ const logger = require('../middleware/logger');
 const { processAirportData } = require('../services/process-airport-data');
 const tx = require('../services/tx');
 const { readFileData, writeFileData } = require('../util/file-util');
+const { parseCSVData } = require('../util/parse-csv-data');
 
 const LOCAL_CSV_PATH = path.join(__dirname, '..', 'uploads', 'airports.csv');
 
-const fetchAndUpdateAirports = async () => {
+const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
   let csvData;
   let dbClient;
-
-  console.log(LOCAL_CSV_PATH);
 
   try {
     if (process.env.NODE_ENV === 'dev') {
@@ -37,28 +36,7 @@ const fetchAndUpdateAirports = async () => {
       `CSV data fetched. First 200 characters: ${csvData.substring(0, 200)}`
     );
 
-    const results = [];
-
-    const stream = Readable.from(csvData);
-
-    await new Promise((resolve, reject) => {
-      stream
-        .pipe(csv())
-        .on('data', (data) => {
-          results.push(data);
-        })
-        .on('end', () => {
-          logger.info(
-            `Parsed ${results.length} rows from the original dataset`
-          );
-
-          resolve();
-        })
-        .on('error', (err) => {
-          logger.error(err);
-          reject(err);
-        });
-    });
+    const results = await parseCSVData(csvData);
 
     const processedAirports = processAirportData(results);
     logger.info(
