@@ -261,4 +261,52 @@ describe('DB Controller Tests', () => {
     expect(logger.info.calledWith('No airports to update/insert today')).to.be
       .true;
   });
+
+  it('should roll back transaction if an upsert error occurs', async () => {
+    const mockCsvData =
+      'id,iata_code,icao_code,latitude_deg,longitude_deg\n80085,ABCD,ABC,67.54,90.11';
+    axiosGetStub.resolves({ data: mockCsvData });
+    readFileDataStub.resolves(null);
+    writeFileDataStub.resolves();
+
+    parseCSVStub.resolves([
+      {
+        id: 80085,
+        iata_code: 'ABCD',
+        icao_code: 'ABC',
+        latitude_deg: 67.54,
+        longitude_deg: 90.11,
+      },
+    ]);
+
+    const processAirportDataStub = sinon.stub().returns([
+      {
+        id: 80085,
+        iata_code: 'ABCD',
+        icao_code: 'ABC',
+        latitude_deg: 67.54,
+        longitude_deg: 90.11,
+      },
+    ]);
+    sinon.replace(
+      require('../../src/services/process-airport-data'),
+      'processAirportData',
+      processAirportDataStub
+    );
+
+    db.batchUpsertAirports = sinon.stub().throws(new Error('Upsert Error'));
+
+    await fetchAndUpdateAirports(dummyCSVPath);
+
+    expect(startTxStub.calledOnce).to.be.true;
+    expect(db.batchUpsertAirports.calledOnce).to.be.true;
+    expect(rollbackTxStub.calledOnce).to.be.true;
+    expect(
+      logger.error.calledWithMatch(
+        sinon.match
+          .instanceOf(Error)
+          .and(sinon.match.has('message', 'Upsert Error'))
+      )
+    ).to.be.true;
+  });
 });
