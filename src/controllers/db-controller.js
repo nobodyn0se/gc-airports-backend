@@ -10,6 +10,7 @@ const { processAirportData } = require('../services/process-airport-data');
 const tx = require('../services/tx');
 const { readFileData, writeFileData } = require('../util/file-util');
 const { parseCSVData } = require('../util/parse-csv-data');
+const { createAirportsTable } = require('../services/db');
 
 const LOCAL_CSV_PATH = path.join(__dirname, '..', 'uploads', 'airports.csv');
 
@@ -44,6 +45,7 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
     );
 
     if (processedAirports.length > 0) {
+      await createAirportsTable();
       const BATCH_SIZE = process.env.BATCH_SIZE;
 
       dbClient = await tx.startTx();
