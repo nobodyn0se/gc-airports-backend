@@ -30,8 +30,8 @@ const createAirportsTable = async () => {
     await pool.query(queries.createAirportsTableQuery);
     logger.info('Airports table created/exists in Postgres');
   } catch (err) {
-    logger.error(`Error creating airports table ${err}`);
-    // process.exit(1);
+    logger.error(`Error creating airports table`);
+    throw err;
   }
 };
 
@@ -81,7 +81,8 @@ const batchUpsertAirports = async (client, airportsBatch) => {
     await client.query(queryText, values);
     logger.info(`Upserted a batch of ${airportsBatch.length} airports`);
   } catch (err) {
-    logger.error(`Upsert Error, ${err}`);
+    logger.error(`Upsert Error occurred`);
+    throw err;
   }
 };
 
