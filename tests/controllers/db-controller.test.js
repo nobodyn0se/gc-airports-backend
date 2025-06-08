@@ -1,8 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const axios = require('axios');
-const { Readable } = require('stream');
-const csv = require('csv-parser');
 
 const fileUtil = require('../../src/util/file-util');
 const db = require('../../src/services/db');
