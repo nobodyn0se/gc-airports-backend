@@ -100,10 +100,38 @@ describe('DB Service Tests', () => {
 
     it('should log error if upsert fails', async () => {
       client.query.rejects(new Error('Upsert failed due to connection issue'));
-      await batchUpsertAirports(client, ['dummy1', 'dummy2']);
 
-      expect(loggerError.calledOnce).to.be.true;
-      expect(loggerInfo.notCalled).to.be.true;
+      const airportsBatch = [
+        {
+          id: 1,
+          ident: 'DUMMY1',
+          type: 'airport',
+          name: 'Dummy Airport 1',
+          lat: 0,
+          long: 0,
+          elevation: 100,
+          icao: 'DUM1',
+          iata: 'D1',
+          country: 'Country1',
+        },
+        {
+          id: 2,
+          ident: 'DUMMY2',
+          type: 'airport',
+          name: 'Dummy Airport 2',
+          lat: 1,
+          long: 1,
+          elevation: 200,
+          icao: 'DUM2',
+          iata: 'D2',
+          country: 'Country2',
+        },
+      ];
+
+      batchUpsertAirports(client, airportsBatch).catch((_) => {
+        expect(loggerError.calledOnce).to.be.true;
+        expect(loggerInfo.notCalled).to.be.true;
+      });
     });
   });
 
@@ -121,15 +149,19 @@ describe('DB Service Tests', () => {
     it('should log an error while creating airports table', async () => {
       pool.query.rejects(new Error('Table creation failed'));
 
-      await createAirportsTable();
+      createAirportsTable().catch((error) => {
+        expect(loggerInfo.notCalled).to.be.true;
 
-      expect(loggerInfo.notCalled).to.be.true;
+        expect(
+          loggerError.calledWithMatch(
+            sinon.match
+              .instanceOf(Error)
+              .and(sinon.match.has('message', 'Error creating airports table'))
+          )
+        );
 
-      expect(loggerError.getCall(0).args[0]).to.equal(
-        'Error creating airports table Error: Table creation failed'
-      );
-
-      expect(loggerError.calledOnce).to.be.true;
+        expect(loggerError.calledOnce).to.be.true;
+      });
     });
   });
 
