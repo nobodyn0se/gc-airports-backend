@@ -7,6 +7,7 @@ const {
   pool,
   batchUpsertAirports,
   createAirportsTable,
+  searchAirportByUser,
 } = require('../../src/services/db');
 
 describe('DB Service Tests', () => {
@@ -198,6 +199,30 @@ describe('DB Service Tests', () => {
       expect(results.length).to.equal(2);
       expect(loggerInfo.calledOnce).to.be.true;
       expect(loggerInfo.calledWith('Found 2 airports for search term: NEW'));
+    });
+
+    it('should return nothing if the searchTerm is empty', async () => {
+      const mockSearchTerm = '';
+      const { searchAirportByUser } = require('../../src/services/db');
+
+      const results = await searchAirportByUser(mockSearchTerm);
+
+      expect(results).to.be.undefined;
+      expect(pool.query.notCalled).to.be.true;
+      expect(loggerInfo.notCalled).to.be.true;
+      expect(loggerError.notCalled).to.be.true;
+    });
+
+    it('should log an error if the query does not work', async () => {
+      const mockSearchTerm = 'XYZ';
+      pool.query.rejects(new Error('Error during search ops'));
+
+      const { searchAirportByUser } = require('../../src/services/db');
+      const results = await searchAirportByUser(mockSearchTerm);
+
+      expect(results).to.be.undefined;
+      expect(loggerInfo.notCalled).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
     });
   });
 });
