@@ -1,8 +1,4 @@
 const axios = require('axios');
-const csv = require('csv-parser');
-const fs = require('fs').promises;
-const path = require('path');
-const { Readable } = require('stream');
 
 const db = require('../services/db');
 const logger = require('../middleware/logger');
@@ -13,15 +9,13 @@ const { parseCSVData } = require('../util/parse-csv-data');
 const { createAirportsTable } = require('../services/db');
 const { errorHandler } = require('../middleware/error-handler');
 
-const LOCAL_CSV_PATH = path.join(__dirname, '..', 'uploads', 'airports.csv');
-
 const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
   let csvData;
   let dbClient;
 
   try {
     if (process.env.NODE_ENV === 'dev') {
-      csvData = await readFileData(LOCAL_CSV_PATH, 'CSV');
+      csvData = await readFileData(LOCAL_CSV_PATH, fileType);
     }
 
     if (csvData == null) {
@@ -30,7 +24,7 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
       csvData = response.data;
 
       if (process.env.NODE_ENV === 'dev') {
-        await writeFileData(LOCAL_CSV_PATH, 'CSV', csvData);
+        await writeFileData(LOCAL_CSV_PATH, fileType, csvData);
       }
     }
 
