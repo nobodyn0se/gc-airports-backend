@@ -14,7 +14,9 @@ const createAirportsTableQuery = `
     elevation INTEGER,
     icao VARCHAR(4) NOT NULL,
     iata VARCHAR(3) NOT NULL,
-    country VARCHAR(4)
+    country VARCHAR(4),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
   );
 `;
 
@@ -34,7 +36,18 @@ const batchUpsertAirportsQuery = (columns, values) => `
     elevation = EXCLUDED.elevation,
     icao = EXCLUDED.icao,
     iata = EXCLUDED.iata,
-    country = EXCLUDED.country;
+    country = EXCLUDED.country,
+    updated_at = NOW()
+  WHERE
+    airports.ident IS DISTINCT FROM EXCLUDED.ident OR
+    airports.type IS DISTINCT FROM EXCLUDED.type OR
+    airports.name IS DISTINCT FROM EXCLUDED.name OR
+    airports.lat IS DISTINCT FROM EXCLUDED.lat OR
+    airports.long IS DISTINCT FROM EXCLUDED.long OR
+    airports.elevation IS DISTINCT FROM EXCLUDED.elevation OR
+    airports.icao IS DISTINCT FROM EXCLUDED.icao OR
+    airports.iata IS DISTINCT FROM EXCLUDED.iata OR
+    airports.country IS DISTINCT FROM EXCLUDED.country;
 `;
 
 
