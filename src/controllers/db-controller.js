@@ -11,6 +11,7 @@ const tx = require('../services/tx');
 const { readFileData, writeFileData } = require('../util/file-util');
 const { parseCSVData } = require('../util/parse-csv-data');
 const { createAirportsTable } = require('../services/db');
+const { errorHandler } = require('../middleware/error-handler');
 
 const LOCAL_CSV_PATH = path.join(__dirname, '..', 'uploads', 'airports.csv');
 
@@ -64,8 +65,8 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
       logger.info('No airports to update/insert today');
     }
   } catch (error) {
-    logger.error(error);
-    // throw error;
+    errorHandler(error);
+
     if (dbClient) {
       await tx.rollbackTx(dbClient);
     }
