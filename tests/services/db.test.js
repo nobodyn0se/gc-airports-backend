@@ -132,4 +132,40 @@ describe('DB Service Tests', () => {
       expect(loggerError.calledOnce).to.be.true;
     });
   });
+
+  describe('Airport Search Tests', () => {
+    let searchAirportsByUser;
+
+    beforeEach(() => {
+      delete require.cache[
+        require.resolve('../../src/controllers/db-controller')
+      ];
+
+      searchAirportsByUser = require('../../src/services/db');
+    });
+
+    it('should successfully return a few records upon search', async () => {
+      pool.query.resolves([
+        {
+          name: 'Newark Liberty International Airport',
+          icao: 'KEWR',
+          iata: 'EWR',
+        },
+        {
+          name: 'New Orleans Louis Armstrong International Airport',
+          icao: 'KMSY',
+          iata: 'MSY',
+        },
+      ]);
+
+      const mockSearchTerm = 'NEW';
+      const { searchAirportByUser } = require('../../src/services/db');
+
+      const results = await searchAirportByUser(mockSearchTerm);
+
+      expect(results.length).to.equal(2);
+      expect(loggerInfo.calledOnce).to.be.true;
+      expect(loggerInfo.calledWith('Found 2 airports for search term: NEW'));
+    });
+  });
 });
