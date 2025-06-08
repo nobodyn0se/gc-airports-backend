@@ -184,13 +184,7 @@ describe('DB Controller Tests', () => {
     expect(startTxStub.notCalled).to.be.true;
     expect(commitTxStub.notCalled).to.be.true;
     expect(logger.error.calledOnce).to.be.true;
-    expect(
-      logger.error.calledWithMatch(
-        sinon.match
-          .instanceOf(Error)
-          .and(sinon.match.has('message', 'Stream Error'))
-      )
-    ).to.be.true;
+    expect(logger.error.getCall(0).args[0]).to.deep.equal('Stream Error');
   });
 
   it('should batch upsert airports into the database', async () => {
@@ -303,12 +297,7 @@ describe('DB Controller Tests', () => {
     expect(startTxStub.calledOnce).to.be.true;
     expect(db.batchUpsertAirports.calledOnce).to.be.true;
     expect(rollbackTxStub.calledOnce).to.be.true;
-    expect(
-      logger.error.calledWithMatch(
-        sinon.match
-          .instanceOf(Error)
-          .and(sinon.match.has('message', 'Upsert Error'))
-      )
-    ).to.be.true;
+
+    expect(logger.error.getCall(0).args[0]).to.deep.equal('Upsert Error');
   });
 });
