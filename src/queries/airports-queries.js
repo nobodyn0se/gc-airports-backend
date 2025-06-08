@@ -24,6 +24,15 @@ const selectAllAirportsQuery = `
   SELECT * FROM airports;
 `;
 
+const getSearchedAirportQuery = (columns) => `
+  SELECT ${columns} 
+  FROM airports 
+  WHERE name ILIKE '%' || $1 || '%' OR 
+        icao ILIKE $1 OR 
+        iata ILIKE $1 
+  LIMIT 10;
+`;
+
 const batchUpsertAirportsQuery = (columns, values) => `
   INSERT INTO airports (${columns})
   VALUES ${values}
@@ -73,5 +82,6 @@ module.exports = {
   insertAirportQuery,
   updateAirportQuery,
   batch_InsertAirportsQuery,
-  batchUpsertAirportsQuery
+  batchUpsertAirportsQuery,
+  getSearchedAirportQuery
 };
