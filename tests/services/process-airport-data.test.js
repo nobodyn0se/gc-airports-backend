@@ -1,8 +1,6 @@
 const { expect } = require('chai');
 
-const {
-  processAirportData,
-} = require('../../src/services/process-airport-data');
+const { processAirportData } = require('../../src/util/process-airport-data');
 
 describe('Airport Data Processor Tests', () => {
   const input = [

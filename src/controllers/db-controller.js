@@ -6,7 +6,7 @@ const { Readable } = require('stream');
 
 const db = require('../services/db');
 const logger = require('../middleware/logger');
-const { processAirportData } = require('../services/process-airport-data');
+const { processAirportData } = require('../util/process-airport-data');
 const tx = require('../services/tx');
 const { readFileData, writeFileData } = require('../util/file-util');
 const { parseCSVData } = require('../util/parse-csv-data');
