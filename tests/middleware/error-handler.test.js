@@ -3,10 +3,13 @@ const sinon = require('sinon');
 
 const logger = require('../../src/middleware/logger');
 const util = require('../../src/util/util');
-const { errorHandler } = require('../../src/middleware/error-handler');
+const {
+  errorHandler,
+  notFoundHandler,
+} = require('../../src/middleware/error-handler');
 
 describe('Error Handling Middleware Tests', () => {
-  let res, req;
+  let res, req, next;
 
   beforeEach(() => {
     sinon.stub(util, 'logLevel');
@@ -21,6 +24,8 @@ describe('Error Handling Middleware Tests', () => {
       status: sinon.stub().returnsThis(),
       json: sinon.stub(),
     };
+
+    next = sinon.stub();
   });
 
   afterEach(() => {
@@ -67,6 +72,20 @@ describe('Error Handling Middleware Tests', () => {
       '/test/dummy'
     );
 
+    expect(logger.warn.notCalled).to.be.true;
+  });
+
+  it('should handle a 404 error', () => {
+    notFoundHandler(req, res, next);
+
+    expect(next.calledOnce).to.be.true;
+
+    const error = new Error('Not Found Error');
+    error.status = 404;
+    errorHandler(error, req, res);
+
+    expect(logger.error.calledOnce).to.be.true;
+    expect(logger.error.getCall(0).args[1]).to.have.property('statusCode', 404);
     expect(logger.warn.notCalled).to.be.true;
   });
 });
