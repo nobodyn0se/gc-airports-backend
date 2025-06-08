@@ -53,6 +53,8 @@ describe('DB Controller Tests', () => {
       require.resolve('../../src/controllers/db-controller')
     ];
 
+    sinon.stub(db, 'createAirportsTable');
+
     // require after all stubbing OR the test fails due to implementation override
     fetchAndUpdateAirports = require('../../src/controllers/db-controller');
 
