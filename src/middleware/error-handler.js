@@ -1,30 +1,29 @@
 const logger = require('./logger');
-const {
-  logLevel,
-  publicErrorMessage,
-} = require('../util/util');
+const { logLevel, publicErrorMessage } = require('../util/util');
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.status || 500;
 
   if (logLevel(statusCode) === 'warn') {
     logger.warn(err.message, {
-      url: req.originalUrl,
+      url: req?.originalUrl,
       statusCode: statusCode,
     });
   } else {
     logger.error(err.message, {
-      url: req.originalUrl,
+      url: req?.originalUrl,
       statusCode: statusCode,
     });
   }
 
-  res.status(statusCode);
-  res.json({
-    url: req.originalUrl,
-    status: statusCode,
-    message: publicErrorMessage(statusCode),
-  });
+  if (req && res) {
+    res.status(statusCode);
+    res.json({
+      url: req.originalUrl,
+      status: statusCode,
+      message: publicErrorMessage(statusCode),
+    });
+  }
 };
 
 const notFoundHandler = (req, res, next) => {
