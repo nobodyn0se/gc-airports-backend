@@ -85,53 +85,29 @@ const batchUpsertAirports = async (client, airportsBatch) => {
   }
 };
 
-const batch_InsertAirports = async (dbClient, airports) => {
-  if (airports.length === 0) return;
+const searchAirportByUser = async (searchTerm) => {
+  if (searchTerm == null || searchTerm === '') {
+    return;
+  }
 
-  const columns = [
-    'id',
-    'ident',
-    'type',
-    'name',
-    'lat',
-    'long',
-    'elevation',
-    'icao',
-    'iata',
-    'country',
-  ];
+  const columnsToGet = ['name', 'icao', 'iata', 'lat', 'long', 'country'];
+  const queryText = queries.getSearchedAirportQuery(columnsToGet);
 
-  const valuePlaceholders = airports
-    .map((airport, airportIndex) => {
-      return `(${columns.map((col, colIndex) => `$${airportIndex * columns.length + colIndex + 1}`).join(', ')})`;
-    })
-    .join(', ');
-
-  const values = airports.flatMap((airport) => [
-    airport.id,
-    airport.ident,
-    airport.type,
-    airport.name,
-    airport.lat,
-    airport.long,
-    airport.elevation,
-    airport.icao,
-    airport.iata,
-    airport.country,
-  ]);
-
-  const queryText = queries.insertAirportsBatchQuery(
-    columns.join(', '),
-    valuePlaceholders
-  );
-
-  await dbClient.query(queryText, values);
+  try {
+    const results = await pool.query(queryText, [searchTerm]);
+    logger.info(
+      `Found ${results.length} airports for search term: ${searchTerm}`
+    );
+    return results;
+  } catch (err) {
+    logger.error(`Search error: ${err}`);
+  }
 };
 
 module.exports = {
   testConnection,
   createAirportsTable,
-  batch_InsertAirports,
   batchUpsertAirports,
+  searchAirportByUser,
   pool,
 };
