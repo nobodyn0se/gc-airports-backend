@@ -14,8 +14,7 @@ const parseCSVData = async (csvData) => {
       })
       .on('end', () => {
         logger.info(`Parsed ${results.length} rows from the original dataset`);
-
-        resolve();
+        resolve(results);
       })
       .on('error', (err) => {
         logger.error(err);
