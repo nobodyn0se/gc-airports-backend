@@ -115,9 +115,9 @@ const searchAirportByUser = async (searchTerm) => {
 
     const results = await pool.query(queryText, [searchTerm]);
     logger.info(
-      `Found ${results.length} airports for search term: ${searchTerm}`
+      `Found ${results.rowCount} airports for search term: ${searchTerm}`
     );
-    return results;
+    return results.rows;
   } catch (err) {
     logger.error(`Search error: ${err}`);
   }
