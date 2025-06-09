@@ -105,10 +105,24 @@ const searchAirportByUser = async (searchTerm) => {
   }
 };
 
+const alterTableColumn = async (columnName, dataType) => {
+  if (columnName && dataType) {
+    const queryText = alterTableColumnQuery(columnName, dataType);
+
+    try {
+      await pool.query(queryText);
+      logger.info(`Altered table column ${columnName} to type ${dataType}`);
+    } catch (err) {
+      logger.error(`Alter error, ${err}`);
+    }
+  }
+};
+
 module.exports = {
   testConnection,
   createAirportsTable,
   batchUpsertAirports,
   searchAirportByUser,
+  alterTableColumn,
   pool,
 };
