@@ -6,7 +6,7 @@ const createAirportsTableQuery = `
   CREATE TABLE IF NOT EXISTS airports
   (
     id INTEGER PRIMARY KEY,
-    ident VARCHAR(4),
+    ident VARCHAR(10),
     type TEXT,
     name TEXT NOT NULL,
     lat NUMERIC NOT NULL,
