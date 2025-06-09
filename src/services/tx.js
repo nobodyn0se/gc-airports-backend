@@ -1,7 +1,8 @@
 const logger = require('../middleware/logger');
-const { pool } = require('./db');
+const { getPool } = require('./db');
 
 const startTx = async () => {
+  const pool = getPool();
   const client = await pool.connect();
   await client.query('BEGIN');
   logger.info('Starting a Postgres transaction');
@@ -21,6 +22,7 @@ const rollbackTx = async (client) => {
 };
 
 const endPool = async () => {
+  const pool = getPool();
   await pool.end();
   logger.info('Postgres DB Pool ended');
 };

@@ -3,17 +3,32 @@ const { Pool } = require('pg');
 const logger = require('../middleware/logger');
 const queries = require('../queries/airports-queries');
 
-// Create a new pool instance using the connection string
-const pool = new Pool({
-  connectionString: process.env.DB_URL,
-  max: 20, // Maximum number of clients in the pool
-});
+let pool;
+
+const getPool = () => {
+  if (!pool || pool.ended) {
+    // Create a new pool instance using the connection string
+    pool = new Pool({
+      connectionString: process.env.DB_URL,
+      max: 20, // Maximum number of clients in the pool
+    });
+
+    pool.on('remove', () => {
+      logger.warn('Pool ended caught by listener');
+    });
+
+    logger.warn('Started a new pool at start or the previous one closed');
+  }
+
+  return pool;
+};
 
 // Function to test the connection
 const testConnection = async () => {
   let client;
 
   try {
+    const pool = getPool();
     client = await pool.connect();
     logger.info('Connected to the Postgres DB successfully!');
   } catch (err) {
@@ -27,6 +42,7 @@ const testConnection = async () => {
 
 const createAirportsTable = async () => {
   try {
+    const pool = getPool();
     await pool.query(queries.createAirportsTableQuery);
     logger.info('Airports table created/exists in Postgres');
   } catch (err) {
@@ -95,6 +111,8 @@ const searchAirportByUser = async (searchTerm) => {
   const queryText = queries.getSearchedAirportQuery(columnsToGet);
 
   try {
+    const pool = getPool();
+
     const results = await pool.query(queryText, [searchTerm]);
     logger.info(
       `Found ${results.length} airports for search term: ${searchTerm}`
@@ -110,6 +128,7 @@ const alterTableColumn = async (columnName, dataType) => {
     const queryText = alterTableColumnQuery(columnName, dataType);
 
     try {
+      const pool = getPool();
       await pool.query(queryText);
       logger.info(`Altered table column ${columnName} to type ${dataType}`);
     } catch (err) {
@@ -124,5 +143,5 @@ module.exports = {
   batchUpsertAirports,
   searchAirportByUser,
   alterTableColumn,
-  pool,
+  getPool,
 };
