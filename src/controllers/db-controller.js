@@ -41,7 +41,7 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
 
     if (processedAirports.length > 0) {
       await createAirportsTable();
-      const BATCH_SIZE = process.env.BATCH_SIZE;
+      const BATCH_SIZE = parseInt(process.env.BATCH_SIZE);
 
       dbClient = await tx.startTx();
 
