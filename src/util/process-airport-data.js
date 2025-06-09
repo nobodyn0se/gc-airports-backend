@@ -1,3 +1,5 @@
+const logger = require('../middleware/logger');
+
 const processAirportData = (csvData) => {
   const processedData = [];
 
@@ -19,6 +21,22 @@ const processAirportData = (csvData) => {
     const iataCode = row.iata_code || null;
 
     if (!icaoCode || !iataCode) {
+      continue;
+    }
+
+    const ident = row.ident;
+    const country = row.iso_country;
+
+    // Skip records that violate length constraints
+    if (
+      icaoCode?.length > 4 ||
+      iataCode?.length > 3 ||
+      ident?.length > 10 ||
+      country?.length > 2
+    ) {
+      logger.warn(
+        `Anomaly skipped: icao = ${icaoCode}, iata = ${iataCode}, ident = ${ident}, country = ${country}`
+      );
       continue;
     }
 
