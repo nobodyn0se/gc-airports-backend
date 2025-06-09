@@ -65,6 +65,10 @@ const insertAirportQuery = (columns, values) => `
   VALUES (${values}) ON CONFLICT (id) DO NOTHING;
 `;
 
+const alterTableColumnQuery = (column, dataType) => `
+  ALTER TABLE airports
+  ALTER COLUMN ${column} TYPE ${dataType}`
+
 const updateAirportQuery = (updateConditions, id) => `
   UPDATE airports
   SET ${updateConditions}
@@ -83,5 +87,6 @@ module.exports = {
   updateAirportQuery,
   batch_InsertAirportsQuery,
   batchUpsertAirportsQuery,
-  getSearchedAirportQuery
+  getSearchedAirportQuery,
+  alterTableColumnQuery
 };
