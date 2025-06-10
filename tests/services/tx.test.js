@@ -9,66 +9,70 @@ const {
   rollbackTx,
   endPool,
 } = require('../../src/services/tx');
-const { pool } = require('../../src/services/db');
+const { pool, setPool } = require('../../src/services/db');
 
 describe('DB Transaction Tests', () => {
-  let poolConnectStub;
-  let clientQueryStub;
-  let clientReleaseStub;
-  let poolEndStub;
-
   let mockDBClient;
+  let mockPool;
 
   beforeEach(() => {
+    mockPool = {
+      query: sinon.stub(),
+      release: sinon.stub(),
+      on: sinon.stub(),
+      connect: sinon.stub(),
+      end: sinon.stub(),
+    };
+
+    setPool(mockPool);
     mockDBClient = { query: sinon.stub(), release: sinon.stub() };
-    poolConnectStub = sinon.stub(pool, 'connect').resolves(mockDBClient);
-
-    poolEndStub = sinon.stub(pool, 'end');
-
-    clientQueryStub = mockDBClient.query;
-    clientQueryStub.reset();
-    clientReleaseStub = mockDBClient.release;
 
     sinon.stub(logger, 'info');
   });
 
   afterEach(() => {
     sinon.restore();
+    setPool(null);
   });
 
   it('should start a transaction and return a client', async () => {
+    mockPool.connect.resolves(mockDBClient);
+    mockDBClient.query.resolves();
     const client = await startTx();
 
-    expect(poolConnectStub.calledOnce).to.be.true;
-    expect(clientQueryStub.calledWith('BEGIN')).to.be.true;
+    expect(mockPool.connect.calledOnce).to.be.true;
+    expect(client.query.calledWith('BEGIN')).to.be.true;
     expect(client).to.deep.equal(mockDBClient);
     expect(logger.info.calledWith('Starting a Postgres transaction')).to.be
       .true;
   });
 
   it('should commit DB transaction and release the client', async () => {
+    mockDBClient.query.resolves();
     await commitTx(mockDBClient);
 
-    expect(clientQueryStub.calledWith('COMMIT')).to.be.true;
-    expect(clientReleaseStub.calledOnce).to.be.true;
+    expect(mockDBClient.query.calledWith('COMMIT')).to.be.true;
+    expect(mockDBClient.release.calledOnce).to.be.true;
     expect(logger.info.calledWith('Committed a Postgres transaction')).to.be
       .true;
   });
 
   it('should rollback DB transaction and release the client', async () => {
+    mockDBClient.query.resolves();
     await rollbackTx(mockDBClient);
 
-    expect(clientQueryStub.calledWith('ROLLBACK')).to.be.true;
-    expect(clientReleaseStub.calledOnce).to.be.true;
+    expect(mockDBClient.query.calledWith('ROLLBACK')).to.be.true;
+    expect(mockDBClient.release.calledOnce).to.be.true;
     expect(
       logger.info.calledWith('Rolled back the latest Postgres transaction')
     ).to.be.true;
   });
 
   it('should end the pool', async () => {
+    mockPool.end.resolves();
     await endPool();
 
-    expect(poolEndStub.calledOnce).to.be.true;
+    expect(mockPool.end.calledOnce).to.be.true;
     expect(logger.info.calledWith('Postgres DB Pool ended')).to.be.true;
   });
 });
