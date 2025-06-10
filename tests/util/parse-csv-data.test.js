@@ -1,4 +1,5 @@
-const { expect, spy } = require('chai');
+const { expect } = require('chai');
+const { EventEmitter } = require('events');
 const sinon = require('sinon');
 const { parseCSVData } = require('../../src/util/parse-csv-data');
 const logger = require('../../src/middleware/logger');
@@ -7,13 +8,14 @@ describe('CSV Parser Tests', () => {
   let logInfoSpy, logErrorSpy;
 
   beforeEach(() => {
-    logInfoSpy = sinon.spy(logger, 'info');
-    logErrorSpy = sinon.spy(logger, 'error');
+    logInfoSpy = sinon.stub(logger, 'info');
+    logErrorSpy = sinon.stub(logger, 'error');
   });
 
   afterEach(() => {
     logInfoSpy.restore();
     logErrorSpy.restore();
+    sinon.restore();
   });
 
   it('should successfully parse csv data', async () => {
@@ -28,5 +30,27 @@ describe('CSV Parser Tests', () => {
     expect(logInfoSpy.calledOnce).to.be.true;
     expect(logInfoSpy.calledWith(`Parsed 2 rows from the original dataset`)).to
       .be.true;
+  });
+
+  it('should log an error while parsing csv data', async () => {
+    const invalidCSV = 'name,age\n"Charlie,30\nDana,40';
+    let results;
+
+    let fakeParser = new EventEmitter();
+    fakeParser.pipe = () => fakeParser;
+    let fakeCsv = sinon.stub().returns(fakeParser);
+
+    process.nextTick(() => {
+      fakeParser.emit('error', new Error('Invalid CSV'));
+    });
+
+    try {
+      await parseCSVData(invalidCSV, fakeCsv);
+    } catch (error) {
+      expect(error).to.be.instanceOf(Error);
+      expect(error.message).to.include('Invalid CSV');
+
+      expect(logErrorSpy.calledOnce).to.be.true;
+    }
   });
 });
