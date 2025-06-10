@@ -1,8 +1,8 @@
 const { Readable } = require('stream');
-const csv = require('csv-parser');
+// const csv = require('csv-parser');
 const logger = require('../middleware/logger');
 
-const parseCSVData = async (csvData) => {
+const parseCSVData = async (csvData, csv = require('csv-parser')) => {
   const results = [];
   const stream = Readable.from(csvData);
 
