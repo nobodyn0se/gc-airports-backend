@@ -1,8 +1,15 @@
 const { expect } = require('chai');
+const sinon = require('sinon');
 
 const { processAirportData } = require('../../src/util/process-airport-data');
+const logger = require('../../src/middleware/logger');
 
 describe('Airport Data Processor Tests', () => {
+  beforeEach(() => {
+    sinon.stub(logger, 'warn');
+    sinon.stub(logger, 'info');
+  });
+
   const input = [
     {
       id: 2134,
@@ -100,5 +107,33 @@ describe('Airport Data Processor Tests', () => {
   it('should skip KEYW for undefined id', () => {
     const processedOutput = processAirportData(input);
     expect(processedOutput).to.deep.equal(expected);
+  });
+
+  it('should skip and warn of an anomaly that violates DB constraints', () => {
+    const customInput = [
+      {
+        id: 3131,
+        ident: 'EGLL',
+        name: 'London Heathrow',
+        latitude_deg: '2.546',
+        longitude_deg: '-16.7745',
+        elevation_ft: 192,
+        icao_code: 'EGLL',
+        iata_code: 'LHRL',
+      },
+      {
+        id: 400,
+        ident: 'OMDB',
+        name: 'Dubai Intl',
+        latitude_deg: '45.6798',
+        longitude_deg: '-16.7745',
+        elevation_ft: 22,
+        icao_code: 'OMDB',
+        iata_code: 'DXB',
+      },
+    ];
+    const processedOutput = processAirportData(customInput);
+    expect(processedOutput.length).to.equal(1);
+    expect(logger.warn.calledOnce).to.be.true;
   });
 });
