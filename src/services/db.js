@@ -23,6 +23,10 @@ const getPool = () => {
   return pool;
 };
 
+const setPool = (newPool) => {
+  pool = newPool;
+};
+
 // Function to test the connection
 const testConnection = async () => {
   let client;
@@ -144,4 +148,5 @@ module.exports = {
   searchAirportByUser,
   alterTableColumn,
   getPool,
+  setPool,
 };
