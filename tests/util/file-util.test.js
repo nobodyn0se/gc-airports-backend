@@ -1,17 +1,21 @@
 const { expect } = require('chai');
 const fs = require('fs').promises;
+const path = require('path');
 const sinon = require('sinon');
 const logger = require('../../src/middleware/logger');
-const { readFileData } = require('../../src/util/file-util');
+const { readFileData, writeFileData } = require('../../src/util/file-util');
 
 describe('File Util Tests', () => {
-  let accessStub, readFileStub, loggerInfo, loggerError;
+  let accessStub, readFileStub, writeFileStub, loggerInfo, loggerError;
+  let pathStub, mkDirStub;
 
   beforeEach(() => {
     accessStub = sinon.stub(fs, 'access');
     readFileStub = sinon.stub(fs, 'readFile');
-    sinon.stub(fs, 'writeFile');
-    sinon.stub(fs, 'mkdir');
+    writeFileStub = sinon.stub(fs, 'writeFile');
+    mkDirStub = sinon.stub(fs, 'mkdir');
+
+    pathStub = sinon.stub(path, 'dirname');
 
     loggerInfo = sinon.stub(logger, 'info');
     loggerError = sinon.stub(logger, 'error');
@@ -52,6 +56,44 @@ describe('File Util Tests', () => {
       expect(readFileStub.notCalled).to.be.true;
       expect(loggerInfo.notCalled).to.be.true;
       expect(loggerError.calledOnce).to.be.true;
+      expect(err.message).to.deep.equal('File access error');
+    });
+  });
+
+  it('should write data to file successfully', async () => {
+    pathStub.returns('path/test');
+    mkDirStub.resolves();
+    writeFileStub.resolves();
+
+    await writeFileData('path/test', 'CSV', 'dummyData');
+
+    expect(mkDirStub.calledOnce).to.be.true;
+    expect(writeFileStub.calledOnce).to.be.true;
+    expect(loggerInfo.callCount).to.be.equal(2);
+    expect(loggerError.notCalled).to.be.true;
+  });
+
+  it('should log a write failure', async () => {
+    pathStub.returns('path/test');
+    mkDirStub.resolves();
+    writeFileStub.rejects(new Error('Write error'));
+
+    await writeFileData('path/test', 'CSV', 'dummyData').catch((err) => {
+      expect(mkDirStub.calledOnce).to.be.true;
+      expect(loggerInfo.calledOnce).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
+      expect(err.message).to.deep.equal('Write error');
+    });
+  });
+
+  it('should log a mkdir error', async () => {
+    pathStub.returns('path/test');
+    mkDirStub.rejects(new Error('Directory error'));
+    await writeFileData('path/test', 'CSV', 'dummyData').catch((err) => {
+      expect(mkDirStub.calledOnce).to.be.true;
+      expect(loggerInfo.notCalled).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
+      expect(err.message).to.deep.equal('Directory error');
     });
   });
 });
