@@ -18,7 +18,6 @@ describe('DB Transaction Tests', () => {
   let poolEndStub;
 
   let mockDBClient;
-  let loggerInfoStub;
 
   beforeEach(() => {
     mockDBClient = { query: sinon.stub(), release: sinon.stub() };
