@@ -10,6 +10,10 @@ describe('Airport Data Processor Tests', () => {
     sinon.stub(logger, 'info');
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   const input = [
     {
       id: 2134,
