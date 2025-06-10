@@ -8,6 +8,8 @@ const {
   batchUpsertAirports,
   createAirportsTable,
   searchAirportByUser,
+  setPool,
+  getPool,
 } = require('../../src/services/db');
 
 describe('DB Service Tests', () => {
@@ -15,13 +17,25 @@ describe('DB Service Tests', () => {
   let loggerInfo;
   let loggerError;
 
+  let poolStub;
+
   beforeEach(() => {
     client = {
       release: sinon.stub(),
       query: sinon.stub(),
     };
-    sinon.stub(pool, 'connect');
-    sinon.stub(pool, 'query');
+
+    poolStub = {
+      connect: sinon.stub().resolves(client), // Stub connect to resolve to the client
+      on: sinon.stub(), // Stub the on method for event listeners
+      ended: false, // Simulate that the pool is not ended
+      query: sinon.stub(),
+    };
+
+    setPool(poolStub);
+
+    // Stub the getPool function to return the mock pool
+    sinon.stub(require('../../src/services/db'), 'getPool').returns(poolStub);
 
     loggerInfo = sinon.stub(logger, 'info');
     loggerError = sinon.stub(logger, 'error');
@@ -29,11 +43,12 @@ describe('DB Service Tests', () => {
 
   afterEach(() => {
     sinon.restore();
+    setPool(null);
   });
 
   describe('DB Connection', () => {
     it('should connect to the DB successfully', async () => {
-      pool.connect.resolves(client);
+      // pool.connect.resolves(client);
 
       await testConnection();
 
@@ -46,7 +61,8 @@ describe('DB Service Tests', () => {
     });
 
     it('should fail to connect to the DB', async () => {
-      pool.connect.rejects(new Error('Invalid URL'));
+      const mockPool = getPool();
+      mockPool.connect.rejects(new Error('Invalid URL'));
 
       await testConnection();
 
@@ -138,7 +154,10 @@ describe('DB Service Tests', () => {
 
   describe('DB Create Table', () => {
     it('should create a DB airports table successfully', async () => {
-      pool.query.resolves();
+      const mockPool = getPool();
+      expect(mockPool).to.deep.equal(poolStub);
+
+      mockPool.query.resolves();
 
       await createAirportsTable();
       expect(loggerInfo.calledOnce).to.be.true;
@@ -148,7 +167,8 @@ describe('DB Service Tests', () => {
     });
 
     it('should log an error while creating airports table', async () => {
-      pool.query.rejects(new Error('Table creation failed'));
+      const mockPool = getPool();
+      mockPool.query.rejects(new Error('Table creation failed'));
 
       createAirportsTable().catch((error) => {
         expect(loggerInfo.notCalled).to.be.true;
@@ -168,28 +188,29 @@ describe('DB Service Tests', () => {
 
   describe('Airport Search Tests', () => {
     let searchAirportsByUser;
+    let mockPool;
 
     beforeEach(() => {
-      delete require.cache[
-        require.resolve('../../src/controllers/db-controller')
-      ];
-
       searchAirportsByUser = require('../../src/services/db');
+      mockPool = getPool();
     });
 
     it('should successfully return a few records upon search', async () => {
-      pool.query.resolves([
-        {
-          name: 'Newark Liberty International Airport',
-          icao: 'KEWR',
-          iata: 'EWR',
-        },
-        {
-          name: 'New Orleans Louis Armstrong International Airport',
-          icao: 'KMSY',
-          iata: 'MSY',
-        },
-      ]);
+      mockPool.query.resolves({
+        rows: [
+          {
+            name: 'Newark Liberty International Airport',
+            icao: 'KEWR',
+            iata: 'EWR',
+          },
+          {
+            name: 'New Orleans Louis Armstrong International Airport',
+            icao: 'KMSY',
+            iata: 'MSY',
+          },
+        ],
+        rowCount: 2,
+      });
 
       const mockSearchTerm = 'NEW';
       const { searchAirportByUser } = require('../../src/services/db');
@@ -208,14 +229,14 @@ describe('DB Service Tests', () => {
       const results = await searchAirportByUser(mockSearchTerm);
 
       expect(results).to.be.undefined;
-      expect(pool.query.notCalled).to.be.true;
+      expect(mockPool.query.notCalled).to.be.true;
       expect(loggerInfo.notCalled).to.be.true;
       expect(loggerError.notCalled).to.be.true;
     });
 
     it('should log an error if the query does not work', async () => {
       const mockSearchTerm = 'XYZ';
-      pool.query.rejects(new Error('Error during search ops'));
+      mockPool.query.rejects(new Error('Error during search ops'));
 
       const { searchAirportByUser } = require('../../src/services/db');
       const results = await searchAirportByUser(mockSearchTerm);
