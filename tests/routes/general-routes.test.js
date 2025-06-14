@@ -72,4 +72,17 @@ describe('Airport Route Tests', () => {
       'Internal Server Error. Could not pinpoint the error'
     );
   });
+
+  it('should not call the service if searchTerm is empty or undefined', async () => {
+    const response = await request(app).get('/get/search');
+
+    expect(searchAirportByUserStub.notCalled).to.be.true;
+    expect(response.status).to.equal(400);
+    expect(response.body).to.have.property('status', 400);
+    expect(response.body).to.have.property(
+      'message',
+      'Bad Request. Check the client-side request syntax'
+    );
+    expect(logger.error.calledOnce).to.be.true;
+  });
 });
