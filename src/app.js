@@ -26,7 +26,7 @@ app.use(
 
 app.use(express.json());
 
-app.use(generalRoutes);
+app.use('/airports', generalRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
