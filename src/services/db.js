@@ -15,6 +15,7 @@ const getPool = () => {
     pool = new Pool({
       connectionString: process.env.DB_URL,
       max: 20, // Maximum number of clients in the pool
+      idleTimeoutMillis: 120000,
     });
 
     pool.on('remove', () => {
