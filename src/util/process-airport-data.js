@@ -51,6 +51,7 @@ const processAirportData = (csvData) => {
       elevation: isNaN(elevation) ? null : elevation,
       icao: icaoCode,
       iata: iataCode,
+      municipality: row.municipality,
       country: row.iso_country,
     };
 

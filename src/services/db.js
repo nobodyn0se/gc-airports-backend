@@ -70,6 +70,7 @@ const batchUpsertAirports = async (client, airportsBatch) => {
     'elevation',
     'icao',
     'iata',
+    'municipality',
     'country',
   ];
 
@@ -89,6 +90,7 @@ const batchUpsertAirports = async (client, airportsBatch) => {
     airport.elevation,
     airport.icao,
     airport.iata,
+    airport.municipality,
     airport.country,
   ]);
 
@@ -111,7 +113,15 @@ const searchAirportByUser = async (searchTerm) => {
     return;
   }
 
-  const columnsToGet = ['name', 'icao', 'iata', 'lat', 'long', 'country'];
+  const columnsToGet = [
+    'name',
+    'icao',
+    'iata',
+    'lat',
+    'long',
+    'municipality',
+    'country',
+  ];
   const queryText = queries.getSearchedAirportQuery(columnsToGet);
 
   try {

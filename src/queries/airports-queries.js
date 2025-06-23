@@ -14,6 +14,7 @@ const createAirportsTableQuery = `
     elevation INTEGER,
     icao VARCHAR(4) NOT NULL,
     iata VARCHAR(3) NOT NULL,
+    municipality TEXT,
     country VARCHAR(4),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -29,7 +30,8 @@ const getSearchedAirportQuery = (columns) => `
   FROM airports 
   WHERE name ILIKE '%' || $1 || '%' OR 
         icao ILIKE $1 OR 
-        iata ILIKE $1 
+        iata ILIKE $1 OR
+        municipality ILIKE $1
   LIMIT 10;
 `;
 
@@ -45,6 +47,7 @@ const batchUpsertAirportsQuery = (columns, values) => `
     elevation = EXCLUDED.elevation,
     icao = EXCLUDED.icao,
     iata = EXCLUDED.iata,
+    municipality = EXCLUDED.municipality,
     country = EXCLUDED.country,
     updated_at = NOW()
   WHERE
@@ -56,6 +59,7 @@ const batchUpsertAirportsQuery = (columns, values) => `
     airports.elevation IS DISTINCT FROM EXCLUDED.elevation OR
     airports.icao IS DISTINCT FROM EXCLUDED.icao OR
     airports.iata IS DISTINCT FROM EXCLUDED.iata OR
+    airports.municipality IS DISTINCT FROM EXCLUDED.municipality OR
     airports.country IS DISTINCT FROM EXCLUDED.country;
 `;
 
