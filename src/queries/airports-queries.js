@@ -73,6 +73,9 @@ const alterTableColumnQuery = (column, dataType) => `
   ALTER TABLE airports
   ALTER COLUMN ${column} TYPE ${dataType}`
 
+const addColumnQuery = (columnName, dataType) => `
+  ALTER TABLE airports ADD COLUMN ${columnName} ${dataType}`
+
 const updateAirportQuery = (updateConditions, id) => `
   UPDATE airports
   SET ${updateConditions}
@@ -92,5 +95,6 @@ module.exports = {
   batch_InsertAirportsQuery,
   batchUpsertAirportsQuery,
   getSearchedAirportQuery,
-  alterTableColumnQuery
+  alterTableColumnQuery,
+  addColumnQuery
 };

@@ -2,6 +2,10 @@ const { Pool } = require('pg');
 
 const logger = require('../middleware/logger');
 const queries = require('../queries/airports-queries');
+const {
+  alterTableColumnQuery,
+  addColumnQuery,
+} = require('../queries/airports-queries');
 
 let pool;
 
@@ -151,6 +155,20 @@ const alterTableColumn = async (columnName, dataType) => {
   }
 };
 
+const addTableColumn = async (columnName, dataType) => {
+  if (columnName && dataType) {
+    const queryText = addColumnQuery(columnName, dataType);
+
+    try {
+      const pool = getPool();
+      await pool.query(queryText);
+      logger.info(`Added column ${columnName} of type ${dataType}`);
+    } catch (err) {
+      logger.error(`Error adding column, ${columnName}`);
+    }
+  }
+};
+
 module.exports = {
   testConnection,
   createAirportsTable,
@@ -159,4 +177,5 @@ module.exports = {
   alterTableColumn,
   getPool,
   setPool,
+  addTableColumn,
 };
