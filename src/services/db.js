@@ -48,6 +48,7 @@ const testConnection = async () => {
   } finally {
     if (client) {
       client.release();
+      logger.warn('Pool connection released after connection check');
     }
   }
 };
