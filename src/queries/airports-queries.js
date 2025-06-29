@@ -31,7 +31,7 @@ const getSearchedAirportQuery = (columns) => `
   WHERE name ILIKE '%' || $1 || '%' OR 
         icao ILIKE $1 OR 
         iata ILIKE $1 OR
-        municipality ILIKE $1
+        municipality ILIKE '%' || $1 || '%'
   LIMIT 10;
 `;
 
