@@ -19,7 +19,7 @@ const getPool = () => {
     });
 
     pool.on('remove', () => {
-      logger.warn('Pool ended caught by listener');
+      logger.warn('Pool connection ended, caught by listener');
     });
 
     logger.warn('Started a new pool at start or the previous one closed');
