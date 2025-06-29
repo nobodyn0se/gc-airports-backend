@@ -1,3 +1,4 @@
+const logger = require('../middleware/logger');
 const logLevel = (statusCode) => {
   let level;
 
@@ -51,8 +52,18 @@ const createTestError = (statusCode) => {
   return error;
 };
 
+const setPoolTypeParsers = (types) => {
+  types.setTypeParser(20, parseInt); // bigint
+  types.setTypeParser(21, parseInt); // smallint
+  types.setTypeParser(23, parseInt); // integer
+  types.setTypeParser(1700, parseFloat); // numeric
+
+  logger.info('Type parsers set for int and float types');
+};
+
 module.exports = {
   logLevel,
   publicErrorMessage,
   createTestError,
+  setPoolTypeParsers,
 };

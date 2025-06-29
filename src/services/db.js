@@ -1,17 +1,20 @@
 const { Pool } = require('pg');
-
+const types = require('pg').types;
 const logger = require('../middleware/logger');
 const queries = require('../queries/airports-queries');
 const {
   alterTableColumnQuery,
   addColumnQuery,
 } = require('../queries/airports-queries');
+const { setPoolTypeParsers } = require('../util/util');
 
 let pool;
 
 const getPool = () => {
   if (!pool || pool.ended) {
     // Create a new pool instance using the connection string
+    setPoolTypeParsers(types);
+
     pool = new Pool({
       connectionString: process.env.DB_URL,
       max: 20, // Maximum number of clients in the pool
