@@ -1,8 +1,9 @@
 {
   "name": "airportmapper-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend server to fetch search results from Postgres DB",
   "main": "src/app.mjs",
+  "packageManager": "pnpm@10.0.0",
   "scripts": {
     "test": "mocha --require tests/setup.js \"tests/**/*.test.js\"",
     "test-watch": "mocha --watch --require tests/setup.js \"tests/**/*.test.js\"",
