@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
-dotenv.config();
-dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
+if (process.env.NODE_ENV !== 'prod') {
+  dotenv.config();
+  dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
+}
 
 import express from 'express';
 import morgan from 'morgan';
