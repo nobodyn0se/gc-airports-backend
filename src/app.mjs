@@ -3,7 +3,7 @@ if (process.env.NODE_ENV !== 'prod') {
   dotenv.config();
   dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 }
-
+import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
 import { notFoundHandler, errorHandler } from './middleware/error-handler.mjs';
@@ -12,6 +12,7 @@ import logger from './middleware/logger.mjs';
 
 const app = express();
 
+app.use(cors());
 app.use(
   morgan('combined', {
     immediate: true,
