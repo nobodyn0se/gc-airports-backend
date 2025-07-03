@@ -1,6 +1,6 @@
 {
   "name": "airportmapper-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Backend server to fetch search results from Postgres DB",
   "main": "src/app.mjs",
   "packageManager": "pnpm@10.0.0",
