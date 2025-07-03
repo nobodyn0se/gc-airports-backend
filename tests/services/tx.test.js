@@ -1,15 +1,15 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const logger = require('../../src/middleware/logger');
+const logger = require('../../src/middleware/logger.mjs');
 
 const {
   startTx,
   commitTx,
   rollbackTx,
   endPool,
-} = require('../../src/services/tx');
-const { pool, setPool } = require('../../src/services/db');
+} = require('../../src/services/tx.mjs');
+const { pool, setPool } = require('../../src/services/db.mjs');
 
 describe('DB Transaction Tests', () => {
   let mockDBClient;

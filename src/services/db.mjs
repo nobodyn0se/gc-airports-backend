@@ -1,12 +1,16 @@
-const { Pool } = require('pg');
-const types = require('pg').types;
-const logger = require('../middleware/logger');
-const queries = require('../queries/airports-queries');
-const {
+import * as pg from 'pg';
+const types = pg.types;
+const { Pool } = pg;
+
+import logger from '../middleware/logger.mjs';
+import {
   alterTableColumnQuery,
   addColumnQuery,
-} = require('../queries/airports-queries');
-const { setPoolTypeParsers } = require('../util/util');
+  createAirportsTableQuery,
+  batchUpsertAirportsQuery,
+  getSearchedAirportQuery,
+} from '../queries/airports-queries.mjs';
+import { setPoolTypeParsers } from '../util/util.mjs';
 
 let pool;
 
@@ -56,7 +60,7 @@ const testConnection = async () => {
 const createAirportsTable = async () => {
   try {
     const pool = getPool();
-    await pool.query(queries.createAirportsTableQuery);
+    await pool.query(createAirportsTableQuery);
     logger.info('Airports table created/exists in Postgres');
   } catch (err) {
     logger.error(`Error creating airports table`);
@@ -103,7 +107,7 @@ const batchUpsertAirports = async (client, airportsBatch) => {
     airport.country,
   ]);
 
-  const queryText = queries.batchUpsertAirportsQuery(
+  const queryText = batchUpsertAirportsQuery(
     columns.join(', '),
     valuePlaceholders
   );
@@ -131,7 +135,7 @@ const searchAirportByUser = async (searchTerm) => {
     'municipality',
     'country',
   ];
-  const queryText = queries.getSearchedAirportQuery(columnsToGet);
+  const queryText = getSearchedAirportQuery(columnsToGet);
 
   try {
     const pool = getPool();
@@ -174,7 +178,7 @@ const addTableColumn = async (columnName, dataType) => {
   }
 };
 
-module.exports = {
+export {
   testConnection,
   createAirportsTable,
   batchUpsertAirports,

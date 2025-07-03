@@ -1,7 +1,10 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const { publicErrorMessage, createTestError } = require('../../src/util/util');
+const {
+  publicErrorMessage,
+  createTestError,
+} = require('../../src/util/util.mjs');
 
 describe('General Utility Tests', () => {
   it('should return appropriate messages according to status codes', () => {

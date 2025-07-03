@@ -1,9 +1,9 @@
 const { expect } = require('chai');
-const fs = require('fs').promises;
-const path = require('path');
+import { promises as fs } from 'fs';
+import path from 'path';
 const sinon = require('sinon');
-const logger = require('../../src/middleware/logger');
-const { readFileData, writeFileData } = require('../../src/util/file-util');
+const logger = require('../../src/middleware/logger.mjs');
+const { readFileData, writeFileData } = require('../../src/util/file-util.mjs');
 
 describe('File Util Tests', () => {
   let accessStub, readFileStub, writeFileStub, loggerInfo, loggerError;

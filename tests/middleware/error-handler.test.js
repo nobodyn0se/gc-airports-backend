@@ -1,12 +1,12 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const logger = require('../../src/middleware/logger');
-const util = require('../../src/util/util');
+const logger = require('../../src/middleware/logger.mjs');
+const util = require('../../src/util/util.mjs');
 const {
   errorHandler,
   notFoundHandler,
-} = require('../../src/middleware/error-handler');
+} = require('../../src/middleware/error-handler.mjs');
 
 describe('Error Handling Middleware Tests', () => {
   let res, req, next;

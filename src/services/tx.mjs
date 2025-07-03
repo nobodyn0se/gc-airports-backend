@@ -1,5 +1,5 @@
-const logger = require('../middleware/logger');
-const { getPool } = require('./db');
+import logger from '../middleware/logger.mjs';
+import { getPool } from './db.mjs';
 
 const startTx = async () => {
   const pool = getPool();
@@ -27,4 +27,4 @@ const endPool = async () => {
   logger.info('Postgres DB Pool ended');
 };
 
-module.exports = { startTx, commitTx, rollbackTx, endPool };
+export { startTx, commitTx, rollbackTx, endPool };

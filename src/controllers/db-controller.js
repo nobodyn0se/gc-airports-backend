@@ -1,13 +1,12 @@
-const axios = require('axios');
+import axios from 'axios';
 
-const db = require('../services/db');
-const logger = require('../middleware/logger');
-const { processAirportData } = require('../util/process-airport-data');
-const tx = require('../services/tx');
-const { readFileData, writeFileData } = require('../util/file-util');
-const { parseCSVData } = require('../util/parse-csv-data');
-const { createAirportsTable } = require('../services/db');
-const { errorHandler } = require('../middleware/error-handler');
+import logger from '../middleware/logger.mjs';
+import { processAirportData } from '../util/process-airport-data.mjs';
+import { startTx, endPool, commitTx, rollbackTx } from '../services/tx.mjs';
+import { readFileData, writeFileData } from '../util/file-util.mjs';
+import { parseCsvData } from '../util/parse-csv-data.mjs';
+import { batchUpsertAirports, createAirportsTable } from '../services/db.mjs';
+import { errorHandler } from '../middleware/error-handler.mjs';
 
 const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
   let csvData;
@@ -32,7 +31,7 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
       `CSV data fetched. First 200 characters: ${csvData.substring(0, 200)}`
     );
 
-    const results = await parseCSVData(csvData);
+    const results = await parseCsvData(csvData);
 
     const processedAirports = processAirportData(results);
     logger.info(
@@ -43,14 +42,14 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
       await createAirportsTable();
       const BATCH_SIZE = parseInt(process.env.BATCH_SIZE);
 
-      dbClient = await tx.startTx();
+      dbClient = await startTx();
 
       for (let i = 0; i < processedAirports.length; i += BATCH_SIZE) {
         const batch = processedAirports.slice(i, i + BATCH_SIZE);
-        await db.batchUpsertAirports(dbClient, batch);
+        await batchUpsertAirports(dbClient, batch);
       }
 
-      await tx.commitTx(dbClient);
+      await commitTx(dbClient);
 
       logger.info(
         `Upserted ${processedAirports.length} valid airports into Postgres DB`
@@ -62,13 +61,13 @@ const fetchAndUpdateAirports = async (LOCAL_CSV_PATH, fileType = 'CSV') => {
     errorHandler(error);
 
     if (dbClient) {
-      await tx.rollbackTx(dbClient);
+      await rollbackTx(dbClient);
     }
   } finally {
     if (dbClient) {
-      await tx.endPool();
+      await endPool();
     }
   }
 };
 
-module.exports = fetchAndUpdateAirports;
+export default fetchAndUpdateAirports;

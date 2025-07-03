@@ -2,11 +2,11 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const axios = require('axios');
 
-const fileUtil = require('../../src/util/file-util');
-const db = require('../../src/services/db');
-const tx = require('../../src/services/tx');
-const logger = require('../../src/middleware/logger');
-const parseCSVData = require('../../src/util/parse-csv-data'); // Adjust the path accordingly
+const fileUtil = require('../../src/util/file-util.mjs');
+const db = require('../../src/services/db.mjs');
+const tx = require('../../src/services/tx.mjs');
+const logger = require('../../src/middleware/logger.mjs');
+const parseCSVData = require('../../src/util/parse-csv-data.mjs'); // Adjust the path accordingly
 
 describe('DB Controller Tests', () => {
   let readFileDataStub;
@@ -76,7 +76,7 @@ describe('DB Controller Tests', () => {
       .stub()
       .returns([{ iata: 'ABC', icao: 'XYZ', lat: 12.34, long: 56.78 }]);
     sinon.replace(
-      require('../../src/util/process-airport-data'),
+      require('../../src/util/process-airport-data.mjs'),
       'processAirportData',
       processAirportDataStub
     );
@@ -122,7 +122,7 @@ describe('DB Controller Tests', () => {
         { id: 1337, iata: 'ABC', icao: 'XYZ', lat: 12.34, long: 56.78 },
       ]);
     sinon.replace(
-      require('../../src/util/process-airport-data'),
+      require('../../src/util/process-airport-data.mjs'),
       'processAirportData',
       processAirportDataStub
     );
@@ -153,7 +153,7 @@ describe('DB Controller Tests', () => {
 
     const processAirportDataStub = sinon.stub().returns([]);
     sinon.replace(
-      require('../../src/util/process-airport-data'),
+      require('../../src/util/process-airport-data.mjs'),
       'processAirportData',
       processAirportDataStub
     );
@@ -197,7 +197,7 @@ describe('DB Controller Tests', () => {
       { id: 80085, iata: 'DEF', icao: 'GHI', lat: 23.45, long: 67.89 },
     ]);
     sinon.replace(
-      require('../../src/util/process-airport-data'),
+      require('../../src/util/process-airport-data.mjs'),
       'processAirportData',
       processAirportDataStub
     );
@@ -240,7 +240,7 @@ describe('DB Controller Tests', () => {
 
     const processAirportDataStub = sinon.stub().returns([]);
     sinon.replace(
-      require('../../src/util/process-airport-data'),
+      require('../../src/util/process-airport-data.mjs'),
       'processAirportData',
       processAirportDataStub
     );
@@ -284,7 +284,7 @@ describe('DB Controller Tests', () => {
       },
     ]);
     sinon.replace(
-      require('../../src/util/process-airport-data'),
+      require('../../src/util/process-airport-data.mjs'),
       'processAirportData',
       processAirportDataStub
     );

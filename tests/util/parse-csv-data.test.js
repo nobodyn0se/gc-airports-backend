@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const { EventEmitter } = require('events');
 const sinon = require('sinon');
-const { parseCSVData } = require('../../src/util/parse-csv-data');
-const logger = require('../../src/middleware/logger');
+const { parseCsvData } = require('../../src/util/parse-csv-data.mjs');
+const logger = require('../../src/middleware/logger.mjs');
 
 describe('CSV Parser Tests', () => {
   let logInfoSpy, logErrorSpy;
@@ -25,7 +25,7 @@ describe('CSV Parser Tests', () => {
       { id: '4011', iata: 'LFK' },
     ];
 
-    const results = await parseCSVData(csvData);
+    const results = await parseCsvData(csvData);
     expect(results).to.deep.equal(expectedResults);
     expect(logInfoSpy.calledOnce).to.be.true;
     expect(logInfoSpy.calledWith(`Parsed 2 rows from the original dataset`)).to
@@ -45,7 +45,7 @@ describe('CSV Parser Tests', () => {
     });
 
     try {
-      await parseCSVData(invalidCSV, fakeCsv);
+      await parseCsvData(invalidCSV, fakeCsv);
     } catch (error) {
       expect(error).to.be.instanceOf(Error);
       expect(error.message).to.include('Invalid CSV');

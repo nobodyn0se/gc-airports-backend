@@ -87,7 +87,7 @@ const batch_InsertAirportsQuery = (columns, values) => `
   VALUES ${values} ON CONFLICT (id) DO NOTHING;
 `;
 
-module.exports = {
+export {
   createAirportsTableQuery,
   selectAllAirportsQuery,
   insertAirportQuery,

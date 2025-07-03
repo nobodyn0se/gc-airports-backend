@@ -1,5 +1,5 @@
-const logger = require('./logger');
-const { logLevel, publicErrorMessage } = require('../util/util');
+import logger from './logger.mjs';
+import { logLevel, publicErrorMessage } from '../util/util.mjs';
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.status || 500;
@@ -32,4 +32,4 @@ const notFoundHandler = (req, res, next) => {
   next(error);
 };
 
-module.exports = { errorHandler, notFoundHandler };
+export { errorHandler, notFoundHandler };

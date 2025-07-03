@@ -1,11 +1,11 @@
 const { expect } = require('chai');
-const express = require('express');
+import express from 'express';
 const request = require('supertest');
 const sinon = require('sinon');
-const { setPool } = require('../../src/services/db');
-const logger = require('../../src/middleware/logger'); // Adjust the path as necessary
-const { errorHandler } = require('../../src/middleware/error-handler');
-const db = require('../../src/services/db');
+const { setPool } = require('../../src/services/db.mjs');
+const logger = require('../../src/middleware/logger.mjs'); // Adjust the path as necessary
+const { errorHandler } = require('../../src/middleware/error-handler.mjs');
+const db = require('../../src/services/db.mjs');
 
 describe('Airport Route Tests', () => {
   let app, searchAirportByUserStub, poolStub;
@@ -23,7 +23,7 @@ describe('Airport Route Tests', () => {
     sinon.replace(db, 'searchAirportByUser', searchAirportByUserStub);
 
     app = express();
-    const router = require('../../src/routes/general-routes'); // No proxyquire here
+    const router = require('../../src/routes/general-routes.mjs'); // No proxyquire here
     app.use(router);
     app.use(errorHandler);
   });

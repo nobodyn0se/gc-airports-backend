@@ -1,4 +1,4 @@
-const logger = require('../middleware/logger');
+import logger from '../middleware/logger.mjs';
 
 const processAirportData = (csvData) => {
   const processedData = [];
@@ -61,6 +61,4 @@ const processAirportData = (csvData) => {
   return processedData;
 };
 
-module.exports = {
-  processAirportData,
-};
+export { processAirportData };

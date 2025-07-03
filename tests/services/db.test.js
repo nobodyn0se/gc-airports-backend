@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const logger = require('../../src/middleware/logger');
+const logger = require('../../src/middleware/logger.mjs');
 const {
   testConnection,
   pool,
@@ -10,7 +10,7 @@ const {
   searchAirportByUser,
   setPool,
   getPool,
-} = require('../../src/services/db');
+} = require('../../src/services/db.mjs');
 
 describe('DB Service Tests', () => {
   let client;
@@ -35,7 +35,9 @@ describe('DB Service Tests', () => {
     setPool(poolStub);
 
     // Stub the getPool function to return the mock pool
-    sinon.stub(require('../../src/services/db'), 'getPool').returns(poolStub);
+    sinon
+      .stub(require('../../src/services/db.mjs'), 'getPool')
+      .returns(poolStub);
 
     loggerInfo = sinon.stub(logger, 'info');
     loggerError = sinon.stub(logger, 'error');
@@ -191,7 +193,7 @@ describe('DB Service Tests', () => {
     let mockPool;
 
     beforeEach(() => {
-      searchAirportsByUser = require('../../src/services/db');
+      searchAirportsByUser = require('../../src/services/db.mjs');
       mockPool = getPool();
     });
 
@@ -213,7 +215,7 @@ describe('DB Service Tests', () => {
       });
 
       const mockSearchTerm = 'NEW';
-      const { searchAirportByUser } = require('../../src/services/db');
+      const { searchAirportByUser } = require('../../src/services/db.mjs');
 
       const results = await searchAirportByUser(mockSearchTerm);
 
@@ -224,7 +226,7 @@ describe('DB Service Tests', () => {
 
     it('should return nothing if the searchTerm is empty', async () => {
       const mockSearchTerm = '';
-      const { searchAirportByUser } = require('../../src/services/db');
+      const { searchAirportByUser } = require('../../src/services/db.mjs');
 
       const results = await searchAirportByUser(mockSearchTerm);
 
@@ -238,7 +240,7 @@ describe('DB Service Tests', () => {
       const mockSearchTerm = 'XYZ';
       mockPool.query.rejects(new Error('Error during search ops'));
 
-      const { searchAirportByUser } = require('../../src/services/db');
+      const { searchAirportByUser } = require('../../src/services/db.mjs');
       const results = await searchAirportByUser(mockSearchTerm);
 
       expect(results).to.be.undefined;

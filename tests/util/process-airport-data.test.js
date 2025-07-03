@@ -1,8 +1,10 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 
-const { processAirportData } = require('../../src/util/process-airport-data');
-const logger = require('../../src/middleware/logger');
+const {
+  processAirportData,
+} = require('../../src/util/process-airport-data.mjs');
+const logger = require('../../src/middleware/logger.mjs');
 
 describe('Airport Data Processor Tests', () => {
   beforeEach(() => {

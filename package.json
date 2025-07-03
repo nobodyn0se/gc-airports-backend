@@ -2,12 +2,12 @@
   "name": "airportmapper-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "src/app.js",
+  "main": "src/app.mjs",
   "scripts": {
     "test": "mocha --require tests/setup.js \"tests/**/*.test.js\"",
     "test-watch": "mocha --watch --require tests/setup.js \"tests/**/*.test.js\"",
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
+    "start": "node src/app.mjs",
+    "dev": "nodemon src/app.mjs",
     "test-with-coverage": "nyc mocha --require tests/setup.js \"tests/**/*.test.js\""
   },
   "keywords": [],
